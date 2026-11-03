@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Overview · HandoverIQ{% endblock %}
+{% block breadcrumb %}Overview{% endblock %}
+{% block content %}
+<section class="hero hero-home">
+  <div class="hero-copy">
+    <div class="eyebrow"><span class="eyebrow-line"></span>PROJECT HANDOVER WORKSPACE</div>
+    <h1>Keep the knowledge.<br><span>Move the work forward.</span></h1>
+    <p>Turn scattered project notes into an evidence-linked handover a person can review before it is shared.</p>
+    <div class="hero-actions">
+      <a class="button button-dark" href="#add-sources">Start with project files <span aria-hidden="true">↓</span></a>
+      <a class="text-link" href="{{ url_for('handover') }}">Preview incoming view <span aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+  <div class="hero-aside">
+    <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div>
+    <div class="hero-stat-card">
+      <div class="mini-card-label">CURRENT WORKFLOW STAGE</div>
+      <div class="readiness-number status-text">{% if pending_count %}In review{% elif approved_count %}Ready to share{% elif claim_count %}No approved items{% elif source_count %}Ready to extract{% else %}Add sources{% endif %}</div>
+      <div class="stage-track" aria-label="Workflow progress"><span class="stage-pill {% if source_count %}stage-active{% endif %}">Source</span><i></i><span class="stage-pill {% if claim_count %}stage-active{% endif %}">Review</span><i></i><span class="stage-pill {% if approved_count %}stage-active{% endif %}">Handover</span></div>
+      <div class="readiness-caption"><span class="readiness-dot"></span>{% if pending_count %}{{ pending_count }} claim{{ '' if pending_count == 1 else 's' }} waiting for review{% elif approved_count %}{{ approved_count }} approved item{{ '' if approved_count == 1 else 's' }} in the reviewer view{% elif claim_count %}Revisit rejected items or add another source{% elif source_count %}Source intake is complete · extraction is next{% else %}Ready to add your first source{% endif %}</div>
+      <div class="tiny-source-row"><span class="tiny-file-icon">✳</span><span>Evidence-linked claims</span><strong>{{ claim_count }}</strong></div>
+    </div>
+  </div>
+</section>
+
+<section class="metric-grid" aria-label="Workspace summary">
+  <article class="metric-card"><div class="metric-icon icon-mint">▤</div><div class="metric-copy"><span>Sources collected</span><strong>{{ source_count }}</strong><small>Authorized files in this workspace</small></div><span class="metric-arrow">↗</span></article>
+  <article class="metric-card"><div class="metric-icon icon-lavender">✳</div><div class="metric-copy"><span>Candidate claims</span><strong>{{ claim_count }}</strong><small>Each claim keeps its source quote</small></div><span class="metric-arrow">↗</span></article>
+  <article class="metric-card"><div class="metric-icon icon-peach">◷</div><div class="metric-copy"><span>Need your review</span><strong>{{ pending_count }}</strong><small>Nothing is shared automatically</small></div><span class="metric-arrow">↗</span></article>
+</section>
+
+<div class="section-heading">
+  <div><div class="eyebrow">YOUR WORKFLOW</div><h2>From source to handover</h2></div>
+  {% if api_enabled %}<span class="mode-pill mode-model"><span class="mode-dot"></span>Structured model enabled</span>{% else %}<span class="mode-pill mode-local"><span class="mode-dot"></span>Local fallback ready</span>{% endif %}
+</div>
+
+<section class="workspace-grid">
+  <article id="add-sources" class="panel source-panel">
+    <div class="panel-topline"><div class="step-number">01</div><div><span class="panel-kicker">START HERE</span><h3>Add authorized sources</h3></div></div>
+    <p class="panel-description">Begin with a small set of project notes. HandoverIQ keeps the original passage attached to every extracted claim.</p>
+    <form class="upload-form" action="{{ url_for('upload_source') }}" method="post" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="dropzone" for="source-file">
+        <span class="upload-icon">↑</span><strong>Choose a file to upload</strong><span>Markdown or plain text · up to 1 MiB</span>
+        <input id="source-file" name="file" type="file" accept=".md,.txt,text/plain,text/markdown" required>
+      </label>
+      <label class="field-label" for="access-level">Source access label <span class="help-tooltip" title="Demo labels guide the incoming view; they are not real security controls.">i</span></label>
+      <select id="access-level" name="access_level" class="input-control">
+        <option value="team" selected>Team — visible to reviewer and incoming developer</option>
+        <option value="public">Public — visible to everyone in the demo</option>
+        <option value="restricted">Restricted — reviewer only; excluded from extraction</option>
+      </select>
+      <button class="button button-primary button-full" type="submit">Add source <span aria-hidden="true">→</span></button>
+    </form>
+    <div class="privacy-line"><span class="privacy-shield">◇</span>Use only synthetic, public, or properly authorized files.</div>
+  </article>
+
+  <div class="right-column">
+    <article class="panel demo-panel">
+      <div class="demo-panel-copy"><div class="demo-illustration" aria-hidden="true"><span>✳</span><i></i><b></b></div><div><span class="panel-kicker">QUICK START</span><h3>Try the synthetic project</h3><p>Load a fictional makers-club project with open questions, conflicting dates, and one restricted source.</p></div></div>
+      <form action="{{ url_for('demo_load') }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="button button-secondary" type="submit">Load demo sources <span aria-hidden="true">→</span></button>
+      </form>
+      <div class="demo-meta"><span>10 synthetic notes</span><span>·</span><span>No real member data</span></div>
+    </article>
+
+    <article class="panel extraction-panel">
+      <div class="panel-topline"><div class="step-number step-two">02</div><div><span class="panel-kicker">RECONSTRUCT</span><h3>Extract reviewable claims</h3></div></div>
+      <p class="panel-description">Create candidate decisions, owners, actions, risks, dependencies, dates, and questions. Every result starts pending.</p>
+      <form action="{{ url_for('extract') }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="button button-dark button-full" type="submit" {% if source_count == 0 %}disabled{% endif %}>Extract from {{ source_count }} source{{ '' if source_count == 1 else 's' }} <span aria-hidden="true">✳</span></button>
+      </form>
+      <div class="extraction-note"><span class="sparkle">✧</span>{% if api_enabled %}Eligible public/team source text is sent to the configured OpenAI API. Restricted sources are skipped; request errors use local fallback.{% else %}Local rules work without an API key or network connection.{% endif %}</div>
+    </article>
+  </div>
+</section>
+
+<section class="bottom-grid">
+  <article class="panel sources-list-panel">
+    <div class="list-heading"><div><span class="panel-kicker">SOURCE LIBRARY</span><h3>Recent files</h3></div><span class="count-badge">{{ source_count }} total</span></div>
+    {% if sources %}
+      <div class="source-list">
+        {% for source in sources[:5] %}
+          <a class="source-row" href="{{ url_for('source_detail', source_id=source.source_id, role='reviewer') }}">
+            <span class="file-type-icon">{% if source.filename.lower().endswith('.md') %}M{% else %}T{% endif %}</span>
+            <span class="source-row-name"><strong>{{ source.filename }}</strong><small>{% if source.source_type == 'demo' %}Synthetic demo{% else %}Uploaded source{% endif %}</small></span>
+            <span class="access-chip access-{{ source.access_level }}">{{ source.access_level }}</span>
+            <span class="row-chevron">›</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-inline"><span class="empty-symbol">◌</span><span>Your source library is empty. Add a file or load the demo to get started.</span></div>
+    {% endif %}
+  </article>
+  <article class="panel flow-panel">
+    <div class="list-heading"><div><span class="panel-kicker">THE HANDOVER PATH</span><h3>Three clear steps</h3></div></div>
+    <ol class="workflow-steps">
+      <li class="{% if source_count %}step-done{% endif %}"><span class="workflow-marker">{% if source_count %}✓{% else %}1{% endif %}</span><span><strong>Connect sources</strong><small>Authorized Markdown or text</small></span></li>
+      <li class="{% if claim_count %}step-done{% endif %}"><span class="workflow-marker">{% if claim_count %}✓{% else %}2{% endif %}</span><span><strong>Review evidence</strong><small>Edit, reject, or approve claims</small></span></li>
+      <li class="{% if claim_count and pending_count == 0 %}step-done{% endif %}"><span class="workflow-marker">{% if claim_count and pending_count == 0 %}✓{% else %}3{% endif %}</span><span><strong>Share the handover</strong><small>One incoming developer view</small></span></li>
+    </ol>
+  </article>
+</section>
+{% endblock %}

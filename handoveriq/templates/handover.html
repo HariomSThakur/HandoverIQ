@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Incoming developer view · HandoverIQ{% endblock %}
+{% block breadcrumb %}Incoming developer{% endblock %}
+{% block content %}
+<section class="handover-hero">
+  <div class="handover-hero-content"><div class="eyebrow eyebrow-light"><span class="eyebrow-line"></span>THE NEXT CHAPTER</div><h1>A clear place<br>to pick up the work.</h1><p>This view contains only approved claims whose source label allows the incoming developer to see them.</p><div class="handover-hero-meta"><span class="role-indicator"><span></span>Incoming developer</span><span class="meta-divider">·</span><span>Evidence stays attached</span></div></div>
+  <div class="handover-visual" aria-hidden="true"><div class="visual-ring ring-a"></div><div class="visual-ring ring-b"></div><div class="visual-center">↗</div><div class="floating-note note-a"><span class="note-dot"></span>Decision captured</div><div class="floating-note note-b"><span class="note-dot note-green"></span>Next action ready</div></div>
+</section>
+
+<div class="permission-notice"><span class="notice-icon">◇</span><div><strong>Permission-aware demo view</strong><p>Restricted sources and their metadata are filtered out before this page is built. These access labels are simulated, not production security.</p></div><span class="notice-check">✓</span></div>
+
+<section class="handover-metrics">
+  <div><span>Approved source-linked items</span><strong>{{ visible_count }}</strong></div>
+  <div><span>Open actions</span><strong>{{ open_action_count }}</strong></div>
+  <div><span>Visible items still pending review</span><strong>{{ pending_count }}</strong></div>
+</section>
+
+<section class="handover-content-grid">
+  <div class="handover-main-column">
+    {% if visible_count %}
+      {% for kind, label in labels.items() %}
+        {% if groups.get(kind) %}
+          <section class="handover-section">
+            <div class="handover-section-heading"><span class="section-marker">{{ loop.index|string }}</span><h2>{{ label }}</h2><span class="section-count">{{ groups[kind]|length }}</span></div>
+            <div class="handover-claim-list">
+              {% for claim in groups[kind] %}
+                <article class="handover-claim">
+                  <p class="handover-claim-text">{{ claim.claim_text }}</p>
+                  {% if claim.owner or claim.due_date %}<div class="claim-attributes">{% if claim.owner %}<span><i>Owner</i>{{ claim.owner }}</span>{% endif %}{% if claim.due_date %}<span><i>Date</i>{{ claim.due_date }}</span>{% endif %}</div>{% endif %}
+                  <details class="handover-evidence"><summary><span class="evidence-link-icon">↗</span>View source evidence</summary><blockquote>{{ claim.evidence_quote }}</blockquote><a href="{{ url_for('source_detail', source_id=claim.source_id, role='incoming') }}">{{ claim.source.filename }} <span aria-hidden="true">↗</span></a></details>
+                </article>
+              {% endfor %}
+            </div>
+          </section>
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      <section class="empty-state handover-empty"><div class="empty-art"><span>↗</span><i></i></div><h3>Your handover is ready to take shape</h3><p>Approved claims will appear here with source passages. The reviewer needs to load or upload sources, extract claims, and approve the items first.</p><a class="button button-dark" href="{{ url_for('review') }}">Open claim review <span aria-hidden="true">→</span></a></section>
+    {% endif %}
+  </div>
+
+  <aside class="continuation-card">
+    <div class="continuation-top"><span class="continuation-icon">✦</span><span class="suggestion-label">SUGGESTED PLAN</span></div>
+    <h2>Your first two weeks</h2>
+    <p class="continuation-intro">A planning prompt, separate from source facts. Confirm it with the project lead.</p>
+    <div class="week-block"><div class="week-label"><span>WEEK 01</span><i></i></div>{% for item in week_one %}<div class="suggestion-item"><span class="suggestion-check">{% if item.source_fact %}↗{% else %}·{% endif %}</span><div><p>{{ item.text }}</p>{% if item.source_fact %}<a href="{{ url_for('source_detail', source_id=item.claim.source_id, role='incoming') }}">Source-backed action · {{ item.claim.source.filename }}</a>{% else %}<small>Planning suggestion · not a source fact</small>{% endif %}</div></div>{% endfor %}</div>
+    <div class="week-block"><div class="week-label"><span>WEEK 02</span><i></i></div>{% for item in week_two %}<div class="suggestion-item"><span class="suggestion-check">{% if item.source_fact %}↗{% else %}·{% endif %}</span><div><p>{{ item.text }}</p>{% if item.source_fact %}<a href="{{ url_for('source_detail', source_id=item.claim.source_id, role='incoming') }}">Source-backed action · {{ item.claim.source.filename }}</a>{% else %}<small>Planning suggestion · not a source fact</small>{% endif %}</div></div>{% endfor %}</div>
+    <div class="suggestion-footnote"><span>✧</span>This plan is a starting point. Verify owners and dates before acting.</div>
+  </aside>
+</section>
+{% endblock %}

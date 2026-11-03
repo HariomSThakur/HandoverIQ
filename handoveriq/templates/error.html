@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} · HandoverIQ{% endblock %}
+{% block breadcrumb %}Notice{% endblock %}
+{% block content %}
+<section class="empty-state error-state"><div class="empty-art"><span>{{ code }}</span><i></i></div><h1>We couldn’t open that page.</h1><p>{{ message }}</p><a class="button button-dark" href="{{ url_for('home') }}">Back to overview <span aria-hidden="true">→</span></a></section>
+{% endblock %}

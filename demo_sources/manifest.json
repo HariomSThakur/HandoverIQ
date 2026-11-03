@@ -1,0 +1,15 @@
+{
+  "project_name": "Campus Makers Portal (synthetic demo)",
+  "sources": [
+    {"filename": "01-project-overview.md", "access_level": "team"},
+    {"filename": "02-decisions.md", "access_level": "team"},
+    {"filename": "03-open-work.md", "access_level": "team"},
+    {"filename": "04-release-plan.md", "access_level": "team"},
+    {"filename": "05-meeting-notes.md", "access_level": "team"},
+    {"filename": "06-dependencies.md", "access_level": "team"},
+    {"filename": "07-risks.md", "access_level": "team"},
+    {"filename": "08-unresolved-discussion.md", "access_level": "team"},
+    {"filename": "09-coordinator-only.md", "access_level": "restricted"},
+    {"filename": "10-maintenance-notes.md", "access_level": "team"}
+  ]
+}

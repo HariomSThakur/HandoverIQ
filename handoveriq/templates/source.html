@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ source.filename }} · HandoverIQ{% endblock %}
+{% block breadcrumb %}Source evidence{% endblock %}
+{% block content %}
+<div class="back-link-row"><a class="text-link" href="{% if role == 'incoming' %}{{ url_for('handover') }}{% else %}{{ url_for('home') }}{% endif %}">← Back to {% if role == 'incoming' %}incoming view{% else %}workspace{% endif %}</a></div>
+<section class="source-detail-head"><div><div class="eyebrow"><span class="eyebrow-line"></span>ORIGINAL SOURCE</div><h1>{{ source.filename }}</h1><p>Original text is shown with the access label it received at intake.</p></div><span class="access-chip access-{{ source.access_level }}">{{ source.access_level }}</span></section>
+<div class="source-detail-grid"><article class="panel source-content-panel"><div class="source-content-head"><span class="file-type-icon">{% if source.filename.lower().endswith('.md') %}M{% else %}T{% endif %}</span><div><strong>{{ source.filename }}</strong><small>{% if source.source_type == 'demo' %}Synthetic demo source{% else %}Uploaded project source{% endif %}</small></div><span class="source-raw-label">SOURCE TEXT</span></div><pre class="source-raw-text">{{ source.content }}</pre></article>
+  <aside class="panel source-claims-panel"><span class="panel-kicker">LINKED CLAIMS</span><h3>Items from this file</h3>{% if claims %}<div class="linked-claims">{% for claim in claims %}{% if role == 'reviewer' or claim.review_status == 'approved' %}<div class="linked-claim-row"><span class="linked-claim-dot {% if claim.review_status == 'approved' %}dot-approved{% endif %}"></span><div><p>{{ claim.claim_text }}</p><span class="review-status status-{{ claim.review_status }}">{{ claim.review_status }}</span></div></div>{% endif %}{% endfor %}</div>{% else %}<p class="panel-description">No extracted claims point to this source yet.</p>{% endif %}</aside></div>
+{% endblock %}

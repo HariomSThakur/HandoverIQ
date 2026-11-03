@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f6f8fb">
+    <title>{% block title %}HandoverIQ{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+    <script defer src="{{ url_for('static', filename='app.js') }}"></script>
+  </head>
+  <body>
+    <div class="app-frame">
+      <aside class="sidebar" aria-label="Main navigation">
+        <a class="brand" href="{{ url_for('home') }}">
+          <span class="brand-mark" aria-hidden="true">H</span>
+          <span><strong>handover<span class="brand-accent">iq</span></strong><small>Knowledge, carried forward</small></span>
+        </a>
+        <div class="sidebar-label">WORKSPACE</div>
+        <nav class="nav-list">
+          <a class="nav-link {% if request.endpoint == 'home' %}active{% endif %}" href="{{ url_for('home') }}">
+            <span class="nav-icon" aria-hidden="true">⌂</span><span>Overview</span>
+          </a>
+          <a class="nav-link {% if request.endpoint == 'review' or request.endpoint == 'save_review' %}active{% endif %}" href="{{ url_for('review') }}">
+            <span class="nav-icon" aria-hidden="true">◷</span><span>Review claims</span>
+          </a>
+          <a class="nav-link {% if request.endpoint == 'handover' %}active{% endif %}" href="{{ url_for('handover') }}">
+            <span class="nav-icon" aria-hidden="true">↗</span><span>Incoming view</span>
+          </a>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="sidebar-note-icon">i</div>
+          <strong>Evidence before handover</strong>
+          <p>Every approved item keeps a link back to the source passage it came from.</p>
+          <span class="build-chip"><span class="status-dot"></span>Round 2 build</span>
+        </div>
+      </aside>
+
+      <div class="main-shell">
+        <header class="topbar">
+          <div class="breadcrumbs"><span>Workspace</span><span class="crumb-slash">/</span><strong>{% block breadcrumb %}Overview{% endblock %}</strong></div>
+          <div class="topbar-right">
+            <span class="local-badge"><span class="status-dot"></span>Local demo</span>
+            <span class="avatar" title="Single participant">HT</span>
+          </div>
+        </header>
+
+        <main id="main-content" class="page-content">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              <div class="flash-stack" aria-live="polite">
+                {% for category, message in messages %}
+                  <div class="flash flash-{{ category }}"><span>{{ message }}</span><button type="button" class="flash-close" aria-label="Dismiss message">×</button></div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endwith %}
+          {% block content %}{% endblock %}
+        </main>
+
+        <footer class="site-footer">
+          <span>HandoverIQ · source-linked project transitions</span>
+          <span>Demo access labels are simulated. Use synthetic or authorized data only.</span>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Review claims · HandoverIQ{% endblock %}
+{% block breadcrumb %}Review claims{% endblock %}
+{% block content %}
+<section class="page-intro review-intro">
+  <div><div class="eyebrow"><span class="eyebrow-line"></span>HUMAN REVIEW</div><h1>Check what the sources say.</h1><p>Review each claim beside its original quote. Approving a claim means you reviewed it; a quote match alone does not prove it is true.</p></div>
+  <div class="review-summary"><span class="summary-ring">{{ counts.pending }}</span><span><strong>Awaiting a person</strong><small>Pending claims</small></span></div>
+</section>
+
+<section class="panel review-panel">
+  <div class="filter-tabs" role="tablist" aria-label="Filter claims by review state">
+    <a class="filter-tab {% if status == 'pending' %}selected{% endif %}" href="{{ url_for('review', status='pending') }}">Needs review <span>{{ counts.pending }}</span></a>
+    <a class="filter-tab {% if status == 'approved' %}selected{% endif %}" href="{{ url_for('review', status='approved') }}">Approved <span>{{ counts.approved }}</span></a>
+    <a class="filter-tab {% if status == 'rejected' %}selected{% endif %}" href="{{ url_for('review', status='rejected') }}">Rejected <span>{{ counts.rejected }}</span></a>
+    <a class="filter-tab {% if status == 'all' %}selected{% endif %}" href="{{ url_for('review', status='all') }}">All claims</a>
+  </div>
+
+  {% if claims %}
+    <div class="claim-list">
+      {% for claim in claims %}
+        <article class="claim-card">
+          <div class="claim-card-head">
+            <div class="claim-badges"><span class="claim-type type-{{ claim.claim_type }}">{{ kind_labels.get(claim.claim_type, claim.claim_type|replace('_',' ')|title) }}</span><span class="review-status status-{{ claim.review_status }}">{{ claim.review_status }}</span></div>
+            <span class="extraction-label {% if claim.extraction_mode == 'model' %}extraction-model{% else %}extraction-local{% endif %}">{% if claim.extraction_mode == 'model' %}Structured model{% else %}Local fallback{% endif %}</span>
+          </div>
+          <div class="claim-source-line"><span class="source-pin">↳</span><a href="{{ url_for('source_detail', source_id=claim.source_id, role='reviewer') }}">{{ claim.source.filename }}</a><span class="access-chip access-{{ claim.source.access_level }}">{{ claim.source.access_level }}</span><span class="evidence-check {% if claim.evidence_status == 'matched' %}check-good{% else %}check-bad{% endif %}">{% if claim.evidence_status == 'matched' %}✓ Quote found{% else %}! Quote mismatch{% endif %}</span></div>
+          <div class="evidence-block"><div class="evidence-label"><span> SOURCE PASSAGE </span><span>CHUNK {{ claim.chunk.ordinal + 1 }}</span></div><blockquote>{{ claim.evidence_quote or 'No source quote attached.' }}</blockquote></div>
+          <details class="edit-claim" {% if claim.review_status == 'pending' %}open{% endif %}>
+            <summary><span>Edit claim details</span><span class="details-chevron">⌄</span></summary>
+            <form class="claim-edit-form" action="{{ url_for('save_review', claim_id=claim.claim_id, status=status) }}" method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <div class="field-group"><label for="claim-text-{{ claim.claim_id }}">Claim</label><textarea id="claim-text-{{ claim.claim_id }}" name="claim_text" maxlength="700" required>{{ claim.claim_text }}</textarea></div>
+              <div class="field-grid">
+                <div class="field-group"><label for="claim-type-{{ claim.claim_id }}">Category</label><select id="claim-type-{{ claim.claim_id }}" name="claim_type">{% for kind in claim_types %}<option value="{{ kind }}" {% if claim.claim_type == kind %}selected{% endif %}>{{ kind_labels.get(kind, kind|replace('_',' ')|title) }}</option>{% endfor %}</select></div>
+                <div class="field-group"><label for="owner-{{ claim.claim_id }}">Owner <span class="optional-label">optional</span></label><input id="owner-{{ claim.claim_id }}" name="owner" maxlength="160" value="{{ claim.owner or '' }}" placeholder="e.g. project lead"></div>
+                <div class="field-group"><label for="date-{{ claim.claim_id }}">Due date <span class="optional-label">optional</span></label><input id="date-{{ claim.claim_id }}" name="due_date" maxlength="80" value="{{ claim.due_date or '' }}" placeholder="e.g. 2026-11-15"></div>
+              </div>
+              <div class="field-group"><label for="quote-{{ claim.claim_id }}">Evidence quote</label><textarea id="quote-{{ claim.claim_id }}" name="evidence_quote" maxlength="2500" required>{{ claim.evidence_quote }}</textarea><small class="field-hint">A quote match checks that these words appear in the source; it does not establish truth or support.</small></div>
+              <div class="field-group"><label for="note-{{ claim.claim_id }}">Reviewer note <span class="optional-label">optional</span></label><input id="note-{{ claim.claim_id }}" name="reviewer_note" maxlength="1000" value="{{ claim.reviewer_note or '' }}" placeholder="What should the next person know about this claim?"></div>
+              <div class="review-actions">
+                <button class="button button-primary" type="submit" name="action" value="approve" {% if claim.evidence_status != 'matched' %}disabled title="Fix the quote and save it before approving."{% endif %}>Approve claim</button>
+                <button class="button button-secondary" type="submit" name="action" value="save">Save changes</button>
+                <button class="button button-quiet-danger" type="submit" name="action" value="reject">Reject</button>
+              </div>
+            </form>
+          </details>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state"><div class="empty-art"><span>✓</span><i></i></div><h3>{% if status == 'pending' %}No claims waiting for review{% else %}No claims in this view yet{% endif %}</h3><p>{% if status == 'pending' %}Add an authorized source and extract candidates. Every new claim will appear here before it reaches the handover.{% else %}When claims are extracted, you can inspect their source quotes and review state here.{% endif %}</p><a class="button button-dark" href="{{ url_for('home') }}">Go to overview <span aria-hidden="true">→</span></a></div>
+  {% endif %}
+</section>
+{% endblock %}

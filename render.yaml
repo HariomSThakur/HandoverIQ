@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: handoveriq-demo
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-render.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT handoveriq.wsgi:app
+    envVars:
+      - key: HANDOVERIQ_SECRET_KEY
+        generateValue: true
